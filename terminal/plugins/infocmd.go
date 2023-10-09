@@ -3,9 +3,9 @@ package main
 import (
 	"context"
 	"fmt"
-	"github.com/892294101/dds/dbs/sci/terminal/api"
-	"github.com/892294101/dds/dbs/sci/terminal/interactive"
-	"github.com/892294101/dds/dbs/utils"
+	"github.com/892294101/dds-sci/terminal/api"
+	"github.com/892294101/dds-sci/terminal/interactive"
+	"github.com/892294101/dds/utils"
 	"github.com/pkg/errors"
 	"io"
 	"os"

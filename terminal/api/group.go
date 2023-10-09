@@ -2,7 +2,7 @@ package api
 
 import (
 	"fmt"
-	"github.com/892294101/dds/dbs/utils"
+	"github.com/892294101/dds/utils"
 	"github.com/pkg/errors"
 	"os"
 	"path/filepath"
