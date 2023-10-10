@@ -3,7 +3,8 @@ export TAG=7.1.0
 export BD=$(shell date '+%b %d %Y %T')
 GOBUILD=${GOCMD} build -gcflags=all="-l -N" -ldflags "-s -w -X 'github.com/892294101/dds/sci/terminal.Version=$(TAG)' -X 'github.com/892294101/dds/sci/terminal.BDate=$(BD)'"
 
-BUILD_DIR=../build
+#BUILD_DIR=../build
+BUILD_DIR=/Users/kqwang/build
 BINARY_DIR=$(BUILD_DIR)/bin
 PLUGIN_DIR=$(BUILD_DIR)/lib
 LOGS_DIR=$(BUILD_DIR)/logs
