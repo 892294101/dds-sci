@@ -2,7 +2,7 @@ package api
 
 import (
 	"fmt"
-	"github.com/892294101/dds/utils"
+	"github.com/892294101/dds-utils"
 	"github.com/pkg/errors"
 	"os"
 	"path/filepath"
@@ -34,12 +34,12 @@ func NewGroupFile() *ProcessGroupInfo {
 }
 
 func (p *ProcessGroupInfo) WriteTo() error {
-	home, err := utils.GetHomeDirectory()
+	home, err := ddsutils.GetHomeDirectory()
 	if err != nil {
 		return err
 	}
 	file := filepath.Join(*home, "group", p.GroupId)
-	ok := utils.IsFileExist(file)
+	ok := ddsutils.IsFileExist(file)
 	if ok {
 		return errors.Errorf("group already exists: %v\n", p.GroupId)
 	}
@@ -48,7 +48,7 @@ func (p *ProcessGroupInfo) WriteTo() error {
 		return errors.Errorf("open file failed the WriteProcessInfo: %v", err)
 	}
 	var gInfo strings.Builder
-	gInfo.WriteString(fmt.Sprintf("%s: %s, %s: %s\n", utils.DBTYPE, p.DBType, utils.PROCESSTYPE, p.ProcessType))
+	gInfo.WriteString(fmt.Sprintf("%s: %s, %s: %s\n", ddsutils.DBTYPE, p.DBType, ddsutils.PROCESSTYPE, p.ProcessType))
 	hand.WriteString(gInfo.String())
 	gInfo.Reset()
 	hand.Close()
@@ -56,7 +56,7 @@ func (p *ProcessGroupInfo) WriteTo() error {
 }
 
 func (p *ProcessGroupInfo) Remove() error {
-	home, err := utils.GetHomeDirectory()
+	home, err := ddsutils.GetHomeDirectory()
 	if err != nil {
 		return err
 	}
@@ -66,18 +66,18 @@ func (p *ProcessGroupInfo) Remove() error {
 
 func (p *ProcessGroupInfo) ReadGroupFileInfo(g string) (*ProcessGroupInfo, error) {
 	p.GroupId = strings.ToUpper(g)
-	home, err := utils.GetHomeDirectory()
+	home, err := ddsutils.GetHomeDirectory()
 	if err != nil {
 		return nil, err
 	}
 	file := filepath.Join(*home, "group", p.GroupId)
-	ok := utils.IsFileExist(file)
+	ok := ddsutils.IsFileExist(file)
 	if !ok {
 		return nil, errors.Errorf("group not exists: %v", p.GroupId)
 	}
 
 	groupIdFile := filepath.Join(*home, "group", p.GroupId)
-	r, err := utils.ReadLine(groupIdFile)
+	r, err := ddsutils.ReadLine(groupIdFile)
 	if err != nil {
 		return nil, err
 	}
@@ -89,9 +89,9 @@ func (p *ProcessGroupInfo) ReadGroupFileInfo(g string) (*ProcessGroupInfo, error
 				ind := strings.Index(s2, ":")
 				if ind != -1 {
 					switch strings.TrimSpace(s2[:ind]) {
-					case utils.DBTYPE:
+					case ddsutils.DBTYPE:
 						p.DBType = strings.TrimSpace(s2[ind+1:])
-					case utils.PROCESSTYPE:
+					case ddsutils.PROCESSTYPE:
 						p.ProcessType = strings.TrimSpace(s2[ind+1:])
 					default:
 						return nil, errors.Errorf("missing group file information attribute: %v", p.GroupId)

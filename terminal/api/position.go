@@ -1,8 +1,8 @@
 package api
 
 import (
-	"github.com/892294101/dds/spfile"
-	"github.com/892294101/dds/utils"
+	"github.com/892294101/dds-spfile"
+	"github.com/892294101/dds-utils"
 	"github.com/pkg/errors"
 	"regexp"
 	"strconv"
@@ -61,8 +61,8 @@ func (m *LSNAttributes) GetLSN() (uint64, uint64) {
 	return m.logNumber, m.position
 }
 
-func (m *LSNAttributes) parse(args string, regVal *regexp.Regexp, pi *utils.ProcessInfo) error {
-	if pi.Groups.DbType == spfile.GetMySQLName() {
+func (m *LSNAttributes) parse(args string, regVal *regexp.Regexp, pi *ddsutils.ProcessInfo) error {
+	if pi.Groups.DbType == ddsspfile.GetMySQLName() {
 		matchSet := regVal.FindStringSubmatch(args)
 		for i := 0; i < len(matchSet); i++ {
 			switch {
@@ -87,14 +87,14 @@ func (m *LSNAttributes) parse(args string, regVal *regexp.Regexp, pi *utils.Proc
 		}
 
 	} else {
-		return errors.Errorf("syntax is not supported by %v database\n", spfile.GetMySQLName())
+		return errors.Errorf("syntax is not supported by %v database\n", ddsspfile.GetMySQLName())
 	}
 
 	return nil
 }
 
-func AttrParse(args []string, pi *utils.ProcessInfo) (interface{}, error) {
-	argvs := utils.SliceToString(args, "")
+func AttrParse(args []string, pi *ddsutils.ProcessInfo) (interface{}, error) {
+	argvs := ddsutils.SliceToString(args, "")
 	if argvs != nil {
 		etlnp := regexp.MustCompile(ExtTranLogNumPos)
 		etlsr := regexp.MustCompile(ExtTrailLogSeqRBA)

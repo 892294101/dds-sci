@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"github.com/892294101/dds-sci/terminal/api"
 	"github.com/892294101/dds-sci/terminal/interactive"
-	"github.com/892294101/dds/spfile"
 	"github.com/pkg/errors"
 	"io"
 	"os"
@@ -96,7 +95,7 @@ func (t unifiedStopCmd) Exec(ctx context.Context, args []string, sgl chan os.Sig
 		if strings.EqualFold(processInfo.Groups.GroupID, args[1]) {
 			exist = true
 			switch processInfo.Groups.DbType {
-			case spfile.GetMySQLName():
+			case ddsspfile.GetMySQLName():
 				if processInfo.Process == nil {
 					return ctx, errors.Errorf("process group is not running\n")
 				}

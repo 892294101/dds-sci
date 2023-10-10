@@ -3,9 +3,9 @@ package main
 import (
 	"context"
 	"fmt"
+	"github.com/892294101/dds-metadata"
 	"github.com/892294101/dds-sci/terminal/api"
-	"github.com/892294101/dds/metadata"
-	"github.com/892294101/dds/spfile"
+	"github.com/892294101/dds-spfile"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"io"
@@ -38,17 +38,18 @@ func (t addExtractCmd) Exec(ctx context.Context, args []string, sgl chan os.Sign
 		gf := api.NewGroupFile()
 		var dbType string
 		switch {
-		case strings.EqualFold(spfile.GetMySQLName(), args[3]):
-			dbType = spfile.GetMySQLName()
+
+		case strings.EqualFold(ddsspfile.GetMySQLName(), args[3]):
+			dbType = ddsspfile.GetMySQLName()
 			break
-		case strings.EqualFold(spfile.GetOracleName(), args[3]):
-			dbType = spfile.GetOracleName()
+		case strings.EqualFold(ddsspfile.GetOracleName(), args[3]):
+			dbType = ddsspfile.GetOracleName()
 			break
 		default:
 			return ctx, errors.Errorf("Database type is not supported: %v\n", args[3])
 		}
 
-		err := gf.InsertGroupInfo(groupId, dbType, spfile.GetExtractName())
+		err := gf.InsertGroupInfo(groupId, dbType, ddsspfile.GetExtractName())
 		if err != nil {
 			return ctx, errors.Errorf("init process group data error: %v\n", err)
 		}
@@ -59,7 +60,7 @@ func (t addExtractCmd) Exec(ctx context.Context, args []string, sgl chan os.Sign
 		}
 
 		log := ctx.Value(api.LogWrite).(*logrus.Logger)
-		md, err := metadata.InitMetaData(groupId, dbType, spfile.GetExtractName(), log, metadata.CREATE)
+		md, err := ddsmetadata.InitMetaData(groupId, dbType, ddsspfile.GetExtractName(), log, ddsmetadata.CREATE)
 		if err != nil {
 			gf.Remove()
 			return ctx, err
@@ -84,12 +85,12 @@ func (t addExtractCmd) Exec(ctx context.Context, args []string, sgl chan os.Sign
 		}
 
 		// 初始化元数据中的进程类型
-		if err := md.SetProcessType(spfile.GetExtractName()); err != nil {
+		if err := md.SetProcessType(ddsspfile.GetExtractName()); err != nil {
 			gf.Remove()
 			return ctx, err
 		}
 
-		fmt.Fprintf(ctx.Value(api.ShellStdout).(io.Writer), "%s %s process has been added\n\n", groupId, spfile.GetExtractName())
+		fmt.Fprintf(ctx.Value(api.ShellStdout).(io.Writer), "%s %s process has been added\n\n", groupId, ddsspfile.GetExtractName())
 		return ctx, nil
 	}
 

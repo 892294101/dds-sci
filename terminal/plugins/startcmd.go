@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"github.com/892294101/dds-sci/terminal/api"
 	"github.com/892294101/dds-sci/terminal/interactive"
-	"github.com/892294101/dds/spfile"
-	"github.com/892294101/dds/utils"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"io"
@@ -97,7 +95,7 @@ func (t unifiedStartCmd) Exec(ctx context.Context, args []string, sgl chan os.Si
 		return ctx, err
 	}
 
-	dir, err := utils.GetHomeDirectory()
+	dir, err := ddsutils.GetHomeDirectory()
 	if err != nil {
 		return ctx, err
 	}
@@ -116,16 +114,16 @@ func (t unifiedStartCmd) Exec(ctx context.Context, args []string, sgl chan os.Si
 			}
 			exist = true
 			switch processInfo.Groups.DbType {
-			case spfile.GetMySQLName():
+			case ddsspfile.GetMySQLName():
 				execDir = *dir
 				binaryFile = "mysqlextract"
-				proType = spfile.GetMySQLName()
-			case spfile.GetOracleName():
+				proType = ddsspfile.GetMySQLName()
+			case ddsspfile.GetOracleName():
 				execDir = *dir
 				binaryFile = "oracleextract"
-				proType = spfile.GetOracleName()
+				proType = ddsspfile.GetOracleName()
 
-				pfile, err := spfile.LoadSpfile(fmt.Sprintf("%s.desc", strings.ToUpper(args[1])), spfile.UTF8, log, processInfo.Groups.DbType, processInfo.Groups.ProcessType)
+				pfile, err := ddsspfile.LoadSpfile(fmt.Sprintf("%s.desc", strings.ToUpper(args[1])), ddsspfile.UTF8, log, processInfo.Groups.DbType, processInfo.Groups.ProcessType)
 				if err != nil {
 					return ctx, err
 				}
@@ -154,7 +152,7 @@ func (t unifiedStartCmd) Exec(ctx context.Context, args []string, sgl chan os.Si
 	}
 
 	lockFile := filepath.Join(*dir, "tmp", strings.ToUpper(args[1])+".lock")
-	if utils.IsFileExist(lockFile) {
+	if ddsutils.IsFileExist(lockFile) {
 		return ctx, errors.Errorf("process group is starting\n")
 	}
 	_, err = os.Create(lockFile)
@@ -166,9 +164,9 @@ func (t unifiedStartCmd) Exec(ctx context.Context, args []string, sgl chan os.Si
 	fp := interactive.NewForkProcess()
 
 	switch proType {
-	case spfile.GetMySQLName():
+	case ddsspfile.GetMySQLName():
 		err = fp.InitFork(execDir, binaryFile, []string{"-processid", args[1]}, log)
-	case spfile.GetOracleName():
+	case ddsspfile.GetOracleName():
 		err = fp.InitFork(execDir, binaryFile, []string{args[1]}, log)
 	}
 

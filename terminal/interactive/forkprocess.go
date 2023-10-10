@@ -1,7 +1,7 @@
 package interactive
 
 import (
-	"github.com/892294101/dds/utils"
+	"github.com/892294101/dds-utils"
 	"github.com/sirupsen/logrus"
 	"os/exec"
 	"time"
@@ -62,7 +62,7 @@ func (f *ForkProcess) Start(log *logrus.Logger) (int, error) {
 		c.Wait()
 	}(cmd)
 
-	log.Infof("receive cli command: %v %v", binaryFile, *utils.SliceToString(f.args, ""))
+	log.Infof("receive cli command: %v %v", binaryFile, *ddsutils.SliceToString(f.args, ""))
 	if cmd.Process == nil {
 		count := 0
 		for {

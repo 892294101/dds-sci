@@ -3,10 +3,10 @@ package main
 import (
 	"context"
 	"fmt"
+	"github.com/892294101/dds-metadata"
 	"github.com/892294101/dds-sci/terminal/api"
 	"github.com/892294101/dds-sci/terminal/interactive"
-	"github.com/892294101/dds/metadata"
-	"github.com/892294101/dds/utils"
+	"github.com/892294101/dds-utils"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"io"
@@ -43,7 +43,7 @@ func (t alterExtractCmd) Exec(ctx context.Context, args []string, sgl chan os.Si
 	}
 
 	var exist bool
-	var pi *utils.ProcessInfo
+	var pi *ddsutils.ProcessInfo
 	for _, processInfo := range info {
 		if strings.EqualFold(processInfo.Groups.GroupID, args[2]) {
 			exist = true
@@ -64,7 +64,7 @@ func (t alterExtractCmd) Exec(ctx context.Context, args []string, sgl chan os.Si
 		}
 		switch v := apv.(type) {
 		case *api.LSNAttributes:
-			md, err := metadata.InitMetaData(pi.Groups.GroupID, pi.Groups.DbType, pi.Groups.ProcessType, log, metadata.LOAD)
+			md, err := ddsmetadata.InitMetaData(pi.Groups.GroupID, pi.Groups.DbType, pi.Groups.ProcessType, log, ddsmetadata.LOAD)
 			defer md.Close()
 			if err != nil {
 				return ctx, err
@@ -85,7 +85,7 @@ func (t alterExtractCmd) Exec(ctx context.Context, args []string, sgl chan os.Si
 			fmt.Fprintf(ctx.Value(api.ShellStdout).(io.Writer), "Process altered\n\n")
 			log.Infof("after modification: sequence %v position %v", *sn, *pn)
 		case *api.TrailAttrBody:
-			md, err := metadata.InitMetaData(pi.Groups.GroupID, pi.Groups.DbType, pi.Groups.ProcessType, log, metadata.LOAD)
+			md, err := ddsmetadata.InitMetaData(pi.Groups.GroupID, pi.Groups.DbType, pi.Groups.ProcessType, log, ddsmetadata.LOAD)
 			defer md.Close()
 			if err != nil {
 				return ctx, err

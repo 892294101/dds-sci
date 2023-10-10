@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"github.com/892294101/dds-sci/terminal/api"
 	"github.com/892294101/dds-sci/terminal/interactive"
-	"github.com/892294101/dds/utils"
 	"github.com/pkg/errors"
 	"io"
 	"os"
@@ -119,7 +118,7 @@ func (t unifiedInfoCmd) Exec(ctx context.Context, args []string, sgl chan os.Sig
 	}
 
 	var exist bool
-	var pi *utils.ProcessInfo
+	var pi *ddsutils.ProcessInfo
 	for _, processInfo := range info {
 		if strings.EqualFold(processInfo.Groups.GroupID, args[1]) {
 			exist = true

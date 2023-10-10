@@ -2,11 +2,10 @@ package interactive
 
 import (
 	"fmt"
-	"github.com/892294101/dds/metadata"
-	"github.com/892294101/dds/utils"
-
+	"github.com/892294101/dds-metadata"
+	"github.com/892294101/dds-rpc"
 	"github.com/892294101/dds-sci/terminal/api"
-	"github.com/892294101/ddsrpc"
+	"github.com/892294101/dds-utils"
 	"github.com/pingcap/errors"
 	"github.com/sirupsen/logrus"
 
@@ -112,8 +111,8 @@ func (i *InfoDetailStatistics) Set(detail *InfoDetail) {
 
 type Processor struct {
 	// RPC *ddsrpc.RpcClient // Communication body
-	MD metadata.MetaData // 进程元数据
-	metadata.MdHandle
+	MD ddsmetadata.MetaData // 进程元数据
+	ddsmetadata.MdHandle
 }
 
 type RpcBody struct {
@@ -121,16 +120,16 @@ type RpcBody struct {
 	log *logrus.Logger
 }
 
-func (c *RpcBody) ConnectToServer(pi utils.ProcessInfo) (*ddsrpc.RpcClient, error) {
+func (c *RpcBody) ConnectToServer(pi ddsutils.ProcessInfo) (*ddsrpc.RpcClient, error) {
 	if pi.Process == nil {
 		return nil, errors.Errorf("failed to acquire rpc port")
 	}
-
 	pid, err := strconv.Atoi(pi.Process.PID)
 	if err != nil {
 		return nil, err
 	}
-	if ok := utils.CheckPid(pid); ok {
+
+	if ok := ddsutils.CheckPid(pid); ok {
 		RPC, err := ddsrpc.NewRpcClient(pi.Process.PORT)
 		if err != nil {
 			return nil, errors.Errorf("failed to establish rpc")
@@ -145,21 +144,21 @@ todo 停止状态赋值要检测pid是否存在
 
 */
 
-func (c *RpcBody) GetAllGroupAndProcessFile() (pfi []utils.ProcessInfo, err error) {
-	home, err := utils.GetHomeDirectory()
+func (c *RpcBody) GetAllGroupAndProcessFile() (pfi []ddsutils.ProcessInfo, err error) {
+	home, err := ddsutils.GetHomeDirectory()
 	if err != nil {
 		return nil, err
 	}
 
 	// 获取进程组信息文件信息
-	var ginfo []*utils.GroupInfo
+	var ginfo []*ddsutils.GroupInfo
 	gHome := path.Join(*home, "group")
-	groupIds, err := utils.GetAllGroupFileName(gHome, "")
+	groupIds, err := ddsutils.GetAllGroupFileName(gHome, "")
 	if err != nil {
 		return nil, err
 	}
 	for _, groupId := range groupIds {
-		var gi utils.GroupInfo
+		var gi ddsutils.GroupInfo
 		gf := api.NewGroupFile()
 		pgi, err := gf.ReadGroupFileInfo(groupId)
 		if err != nil {
@@ -176,20 +175,20 @@ func (c *RpcBody) GetAllGroupAndProcessFile() (pfi []utils.ProcessInfo, err erro
 	// 获取检查点文件路径和提取进程文件信息
 	for _, info := range ginfo {
 		ProFile := filepath.Join(*home, "pcs", info.GroupID)
-		ok := utils.IsFileExist(ProFile) // 查看进程文件是否存在
+		ok := ddsutils.IsFileExist(ProFile) // 查看进程文件是否存在
 		if ok {
-			v, err := utils.ReadLine(ProFile)
+			v, err := ddsutils.ReadLine(ProFile)
 			if err != nil {
 				return nil, err
 			}
-			pab, err := utils.GetProcessAttribute(v)
+			pab, err := ddsutils.GetProcessAttribute(v)
 			if err != nil {
 				return nil, err
 			}
 			pab.File = ProFile
-			pfi = append(pfi, utils.ProcessInfo{Groups: info, CheckPointFilePath: filepath.Join(*home, "chk", fmt.Sprintf("%s.%s", info.GroupID, "ce")), Process: pab})
+			pfi = append(pfi, ddsutils.ProcessInfo{Groups: info, CheckPointFilePath: filepath.Join(*home, "chk", fmt.Sprintf("%s.%s", info.GroupID, "ce")), Process: pab})
 		} else {
-			pfi = append(pfi, utils.ProcessInfo{Groups: info, CheckPointFilePath: filepath.Join(*home, "chk", fmt.Sprintf("%s.%s", info.GroupID, "ce"))})
+			pfi = append(pfi, ddsutils.ProcessInfo{Groups: info, CheckPointFilePath: filepath.Join(*home, "chk", fmt.Sprintf("%s.%s", info.GroupID, "ce"))})
 		}
 	}
 	return pfi, nil
@@ -205,9 +204,9 @@ func (c *RpcBody) Close() {
 	}
 }
 
-func (c *RpcBody) Detail(pi *utils.ProcessInfo) (*string, error) {
+func (c *RpcBody) Detail(pi *ddsutils.ProcessInfo) (*string, error) {
 	ib := NewInfoDetailDisplay()
-	md, err := metadata.InitMetaData(pi.Groups.GroupID, pi.Groups.DbType, pi.Groups.ProcessType, c.log, metadata.LOAD)
+	md, err := ddsmetadata.InitMetaData(pi.Groups.GroupID, pi.Groups.DbType, pi.Groups.ProcessType, c.log, ddsmetadata.LOAD)
 	if err != nil {
 		return nil, err
 	}
@@ -221,9 +220,9 @@ func (c *RpcBody) Detail(pi *utils.ProcessInfo) (*string, error) {
 
 	var proState string
 	if pi.Process == nil {
-		proState = utils.STOPPED
+		proState = ddsutils.STOPPED
 	} else {
-		proState = utils.RUNNING
+		proState = ddsutils.RUNNING
 	}
 
 	var TimeSinceChkpt string
@@ -237,11 +236,11 @@ func (c *RpcBody) Detail(pi *utils.ProcessInfo) (*string, error) {
 			if err != nil {
 				return nil, err
 			}
-			Lag = utils.DataStreamLagTime(*ct)
+			Lag = ddsutils.DataStreamLagTime(*ct)
 			TimeSinceChkpt = Lag
 		} else {
-			Lag = utils.DataStreamLagTime(*bt)
-			TimeSinceChkpt = utils.DataStreamLagTime(checkPointLag)
+			Lag = ddsutils.DataStreamLagTime(*bt)
+			TimeSinceChkpt = ddsutils.DataStreamLagTime(checkPointLag)
 		}
 
 	}
@@ -257,7 +256,7 @@ func (c *RpcBody) Detail(pi *utils.ProcessInfo) (*string, error) {
 	var LastStarted string
 	st, _ := md.GetStartTime()
 	if st > 0 {
-		LastStarted = utils.NanoSecondConvertToTime(st)
+		LastStarted = ddsutils.NanoSecondConvertToTime(st)
 	}
 
 	id := new(InfoDetail)
@@ -291,7 +290,7 @@ func (c *RpcBody) List() (*string, error) {
 		_, ok := c.Pro[info.Groups.GroupID]
 		if !ok {
 			// 如果检查点文件不存在，则打开
-			md, err := metadata.InitMetaData(info.Groups.GroupID, info.Groups.DbType, info.Groups.ProcessType, c.log, metadata.LOAD)
+			md, err := ddsmetadata.InitMetaData(info.Groups.GroupID, info.Groups.DbType, info.Groups.ProcessType, c.log, ddsmetadata.LOAD)
 			if err != nil {
 				return nil, err
 			}
@@ -313,9 +312,9 @@ func (c *RpcBody) List() (*string, error) {
 
 			var proState string
 			if info.Process == nil {
-				proState = utils.STOPPED
+				proState = ddsutils.STOPPED
 			} else {
-				proState = utils.RUNNING
+				proState = ddsutils.RUNNING
 			}
 
 			var TimeSinceChkpt string
@@ -329,11 +328,11 @@ func (c *RpcBody) List() (*string, error) {
 					if err != nil {
 						return nil, err
 					}
-					Lag = utils.DataStreamLagTime(*ct)
+					Lag = ddsutils.DataStreamLagTime(*ct)
 					TimeSinceChkpt = Lag
 				} else {
-					Lag = utils.DataStreamLagTime(*bt)
-					TimeSinceChkpt = utils.DataStreamLagTime(checkPointLag)
+					Lag = ddsutils.DataStreamLagTime(*bt)
+					TimeSinceChkpt = ddsutils.DataStreamLagTime(checkPointLag)
 				}
 
 			}
