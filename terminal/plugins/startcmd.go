@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"github.com/892294101/dds-sci/terminal/api"
 	"github.com/892294101/dds-sci/terminal/interactive"
+	"github.com/892294101/dds-spfile"
+	"github.com/892294101/dds-utils"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"io"

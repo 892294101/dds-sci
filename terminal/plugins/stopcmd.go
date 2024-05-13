@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/892294101/dds-sci/terminal/api"
 	"github.com/892294101/dds-sci/terminal/interactive"
+	ddsspfile "github.com/892294101/dds-spfile"
 	"github.com/pkg/errors"
 	"io"
 	"os"
@@ -89,7 +90,6 @@ func (t unifiedStopCmd) Exec(ctx context.Context, args []string, sgl chan os.Sig
 	if err != nil {
 		return ctx, err
 	}
-
 	var exist bool
 	for _, processInfo := range info {
 		if strings.EqualFold(processInfo.Groups.GroupID, args[1]) {
